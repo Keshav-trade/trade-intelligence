@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Firebase Test</title>
+</head>
+<body>
+
+<h2>Firebase Connection Test</h2>
+<p>Open console (F12) to see results.</p>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+/* 🔴 PASTE YOUR REAL FIREBASE CONFIG BELOW */
+const firebaseConfig = {
+  apiKey: "PASTE_HERE",
+  authDomain: "PASTE_HERE",
+  projectId: "PASTE_HERE",
+  storageBucket: "PASTE_HERE",
+  messagingSenderId: "PASTE_HERE",
+  appId: "PASTE_HERE"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+console.log("Firebase loaded");
+
+db.collection("test").doc("ping").set({
+  msg: "Firebase is connected",
+  time: Date.now()
+})
+.then(() => {
+  console.log("🔥 FIREBASE WRITE SUCCESS");
+})
+.catch(err => {
+  console.error("❌ FIREBASE WRITE FAILED:", err);
+});
+</script>
+
+</body>
+</html>
