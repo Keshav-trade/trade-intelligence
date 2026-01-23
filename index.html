@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>The Trade Intelligence</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Anton+SC&display=swap');
+
+html, body{
+  margin:0;
+  padding:0;
+  background:#0B0F1A;
+  color:#FFFFFF;
+  font-family:'Alfa Slab One', cursive;
+}
+
+/* ================= ROOT COLORS ================= */
+:root{
+  --blue-main:#141C2F;
+  --red-main:#7B1B0A;
+  --yellow-main:#786818;
+  --grey-main:#27282B;
+
+  --buy-green:#00FF9C;
+  --sell-red:#DD0000;
+  --caution-yellow:#FFD400;
+
+  --text-main:#FFFFFF;
+}
+/* ================= DIALOG FONTS ================= */
+
+.modal{
+  font-family:'Alfa Slab One', cursive;
+}
+
+/* Dialog Title (EURUSD etc.) */
+.modal h2{
+  font-family:'Alfa Slab One', cursive;
+  font-size:22px;
+  text-align:center;
+  margin-bottom:12px;
+}
+
+/* Section headings like Trend, Parallel Channel, etc */
+.modal b{
+  font-family:'Google Sans', sans-serif;
+  font-size:13px;
+  letter-spacing:1px;
+}
+
+/* Pills (clickable options) */
+.pill{
+  font-family:' Google Sans', sans-serif;
+  font-size:11px;
+  letter-spacing:0.5px;
+}
+
+/* Explanation / small helper text if you add later */
+.modal .subtext{
+  font-family:'Google Sans', cursive;
+}
+
+
+/* ================= HEADER ================= */
+.header{
+  text-align:center;
+  font-size:26px;
+  padding:16px;
+  font-family:'Alfa Slab One', cursive;
+  letter-spacing:2px;
+}
+
+/* ================= GRID ================= */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:22px;
+  padding:22px;
+}
+
+/* ================= CARD BASE ================= */
+.card{
+  border-radius:16px;
+  padding:14px;
+  height:240px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.6);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  cursor:pointer;
+  position:relative;
+}
+
+/* ================= CARD STATES ================= */
+.card.blue{
+  background:linear-gradient(to bottom,#0f1627,var(--blue-main));
+}
+.card.red{
+  background:linear-gradient(to bottom,#4f0f06,var(--red-main));
+}
+.card.yellow{
+  background:linear-gradient(to bottom,#5a4f14,var(--yellow-main));
+}
+.card.grey{
+  background:linear-gradient(to bottom,#1b1c1f,var(--grey-main));
+}
+
+/* ================= CARD TEXT ================= */
+.instrument{
+  font-family:'Alfa Slab One', cursive;
+  text-align:center;
+  font-size:18px;
+}
+
+.row{
+  font-family:'Google Sans', sans-serif;
+  font-size:12px;
+  text-align:center;
+  color:#9AA4C7;
+}
+
+.body{
+  text-align:center;
+  font-size:44px;
+  letter-spacing:3px;
+}
+
+.buy{ color:var(--buy-green); }
+.sell{ color:var(--sell-red); }
+
+.warn{
+  color:var(--caution-yellow);
+  font-size:36px;
+  text-align:center;
+  display:block;
+}
+
+.subtext{
+  font-family:'Google Sans', sans-serif;
+  text-align:center;
+  font-size:12px;
+  opacity:0.9;
+}
+
+/* ================= OVERLAY ================= */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.75);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9998;
+}
+.overlay.active{
+  display:flex;
+}
+
+/* ================= MODAL ================= */
+.modal{
+  background:linear-gradient(to bottom,#101827,#141C2F);
+  border-radius:18px;
+  padding:20px;
+  width:360px;
+  z-index:9999;
+  box-shadow:0 15px 40px rgba(0,0,0,0.7);
+}
+
+/* ================= PILLS ================= */
+.section{
+  margin-bottom:10px;
+}
+.pill{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:8px;
+  background:#222;
+  margin:4px;
+  cursor:pointer;
+  font-size:11px;
+}
+.pill.active{
+  background:#00FF9C;
+  color:#000;
+}
+
+/* ================= RESPONSIVE ================= */
+@media(max-width:900px){
+  .grid{ grid-template-columns:repeat(2,1fr); }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">THE TRADE INTELLIGENCE</div>
+<div class="grid" id="board"></div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="title"></h2>
+
+    <div class="section">
+      <b>Trend</b><br>
+      <span class="pill" onclick="toggle('trend','Bullish')">Bullish</span>
+      <span class="pill" onclick="toggle('trend','Bearish')">Bearish</span>
+    </div>
+
+    <div class="section">
+      <span class="pill" onclick="toggle('clean',true)">Clean</span>
+    </div>
+
+    <div class="section">
+      <b>Parallel Channel </b><br>
+      <span class="pill" onclick="toggle('pc','Bullish')">Bullish Parallel Channel </span>
+      <span class="pill" onclick="toggle('pc','Bearish')">Bearish Parallel Channel </span>
+    </div>
+
+    <div class="section">
+      <b>Double Top / Bottom</b><br>
+      <span class="pill" onclick="toggle('dt','Proper')">Proper</span>
+      <span class="pill" onclick="toggle('dt','Deep')">Deep Pullback</span>
+    </div>
+
+    <div class="section">
+      <b>Consolidation</b><br>
+      <span class="pill" onclick="toggle('con','<1.5RR')">&lt;1.5RR</span>
+      <span class="pill" onclick="toggle('con','2RR')">2RR</span>
+      <span class="pill" onclick="toggle('con','Neckline')">At Neckline</span>
+    </div>
+
+    <div class="section">
+      <b>Inside Candle</b><br>
+      <span class="pill" onclick="toggle('inside','Clean Neckline')">Clean Neckline</span>
+      <span class="pill" onclick="toggle('inside','Submerged')">Submerged</span>
+    </div>
+
+    <div class="section">
+      <b>Traps</b><br>
+      <span class="pill" onclick="toggle('liq',true)">Liquidity Trap</span>
+      <span class="pill" onclick="toggle('pct',true)">PCT</span>
+    </div>
+
+    <div class="section">
+      <b>SMMA</b><br>
+      <span class="pill" onclick="toggle('smma',true)">Accumulation at SMMA</span>
+    </div>
+
+    <button onclick="closeModal()">Close</button>
+  </div>
+</div>
+<script>
+/* ===============================
+   CORE DATA
+=============================== */
+const instruments = [
+  "EURUSD","GBPUSD","EURGBP","USDJPY",
+  "GBPJPY","AUDUSD","USDCAD","NZDUSD",
+  "SP500","UK100","NAS100","XAUUSD","BTCUSD"
+];
+
+const board   = document.getElementById("board");
+const overlay = document.getElementById("overlay");
+const titleEl = document.getElementById("title");
+
+let active = null;
+let state  = {};
+
+/* ===============================
+   INITIALIZE CARDS
+=============================== */
+instruments.forEach(i=>{
+  state[i] = {
+    trend:null,
+    clean:false,
+    pc:null,
+    dt:null,
+    con:null,
+    inside:null,
+    liq:false,
+    pct:false,
+    smma:false
+  };
+
+  const c = document.createElement("div");
+  c.className = "card grey";
+  c.id = i;
+  c.innerHTML = `
+    <div class="instrument">${i}</div>
+    <div class="row" id="${i}_trend">Trend: —</div>
+    <div class="row" id="${i}_cat">Category: —</div>
+    <div class="body">—</div>
+    <div class="subtext"></div>
+  `;
+  c.onclick = () => openModal(i);
+  board.appendChild(c);
+});
+
+/* ===============================
+   MODAL CONTROL
+=============================== */
+function openModal(n){
+  active = n;
+  titleEl.innerText = n;
+  overlay.classList.add("active");
+  refreshModal();
+}
+
+function closeModal(){
+  overlay.classList.remove("active");
+}
+
+/* ===============================
+   TOGGLE LOGIC
+=============================== */
+function toggle(key,val){
+  if(typeof state[active][key] === "boolean"){
+    state[active][key] = !state[active][key];
+  } else {
+    state[active][key] = state[active][key] === val ? null : val;
+  }
+  update(active);
+  refreshModal();
+  saveToCloud();
+}
+
+/* ===============================
+   MODAL UI REFRESH
+=============================== */
+function refreshModal(){
+  document.querySelectorAll(".pill").forEach(p=>p.classList.remove("active"));
+  const s = state[active];
+
+  document.querySelectorAll(".pill").forEach(p=>{
+    const t = p.innerText;
+
+    if(t==="Bullish" && s.trend==="Bullish") p.classList.add("active");
+    if(t==="Bearish" && s.trend==="Bearish") p.classList.add("active");
+    if(t==="Clean" && s.clean) p.classList.add("active");
+
+    if(t.includes("Bullish Parallel") && s.pc==="Bullish") p.classList.add("active");
+    if(t.includes("Bearish Parallel") && s.pc==="Bearish") p.classList.add("active");
+
+    if(t==="Proper" && s.dt==="Proper") p.classList.add("active");
+    if(t==="Deep Pullback" && s.dt==="Deep") p.classList.add("active");
+
+    if(t==="<1.5RR" && s.con==="<1.5RR") p.classList.add("active");
+    if(t==="2RR" && s.con==="2RR") p.classList.add("active");
+    if(t==="At Neckline" && s.con==="Neckline") p.classList.add("active");
+
+    if(t==="Clean Neckline" && s.inside==="Clean Neckline") p.classList.add("active");
+    if(t==="Submerged" && s.inside==="Submerged") p.classList.add("active");
+
+    if(t==="Liquidity Trap" && s.liq) p.classList.add("active");
+    if(t==="PCT" && s.pct) p.classList.add("active");
+    if(t==="Accumulation at SMMA" && s.smma) p.classList.add("active");
+  });
+}
+
+/* ===============================
+   CARD UPDATE LOGIC
+=============================== */
+function update(n){
+  const s    = state[n];
+  const card = document.getElementById(n);
+
+  card.className = "card grey";
+  if(s.trend) card.className = "card blue";
+
+  document.getElementById(n+"_trend").innerText = "Trend: " + (s.trend || "—");
+
+  let cats=[];
+  if(s.clean) cats.push("Clean");
+  if(s.pc) cats.push(s.pc+" Parallel Channel");
+  if(s.dt) cats.push("Double Top/Bottom");
+  if(s.con) cats.push("Consolidation");
+  if(s.inside) cats.push(s.inside);
+  if(s.liq) cats.push("Liquidity Trap");
+  if(s.pct) cats.push("PCT");
+  if(s.smma) cats.push("Accumulation at SMMA");
+
+  document.getElementById(n+"_cat").innerText =
+    "Category: " + (cats.length ? cats.join(" & ") : "—");
+
+  let action="—";
+  let sub="";
+
+  /* NO TRADE */
+  if(
+    s.pct ||
+    s.smma ||
+    s.inside==="Submerged" ||
+    s.con==="<1.5RR" ||
+    s.dt==="Proper"
+  ){
+    action="⛔ NO TRADE";
+    card.className="card red";
+  }
+
+  /* DEEP PULLBACK */
+  else if(s.dt==="Deep" && s.trend){
+    action = s.trend==="Bullish"
+      ? `<span class="buy">⬆ BUY</span>`
+      : `<span class="sell">⬇ SELL</span>`;
+    sub="Deep pullback – trade with trend";
+  }
+
+  /* CLEAN */
+  else if(s.clean && s.trend){
+    action = s.trend==="Bullish"
+      ? `<span class="buy">⬆ BUY</span>`
+      : `<span class="sell">⬇ SELL</span>`;
+  }
+
+  /* CAUTION ONLY */
+  else if(s.con==="2RR" || s.con==="Neckline" || s.liq){
+    action = `<span class="warn">⚠</span>`;
+    if(s.con==="2RR") sub="Only trade with 1.5 RR";
+    if(s.con==="Neckline") sub="Only trade after failed breakout";
+    if(s.liq) sub="Trade only after candle closes beyond wick";
+  }
+
+  /* PARALLEL CHANNEL  */
+  else if(s.trend && s.pc){
+    if(s.trend==="Bullish" && s.pc==="Bullish"){
+      action=`<span class="warn">⚠</span><br><span class="buy">⬆ BUY</span>`;
+      sub="Buy only near lower line";
+    }
+    if(s.trend==="Bearish" && s.pc==="Bearish"){
+      action=`<span class="warn">⚠</span><br><span class="sell">⬇ SELL</span>`;
+      sub="Sell only near upper line";
+    }
+    if(s.trend==="Bullish" && s.pc==="Bearish"){
+      action=`<span class="buy">⬆ BUY</span>`;
+      sub="Be cautious near new points";
+    }
+    if(s.trend==="Bearish" && s.pc==="Bullish"){
+      action=`<span class="sell">⬇ SELL</span>`;
+      sub="Be cautious near new points";
+    }
+  }
+
+  document.querySelector("#"+n+" .body").innerHTML = action;
+  document.querySelector("#"+n+" .subtext").innerText = sub;
+}
+
+/* ===============================
+   REVIEW SYSTEM
+=============================== */
+const REVIEW_TIMERS = {
+  trend: 48 * 60 * 60 * 1000,
+  pc: 100 * 60 * 60 * 1000,
+  liq: 2 * 60 * 60 * 1000,
+  inside: 5 * 60 * 60 * 1000,
+  dt: 5 * 60 * 60 * 1000,
+  con: 5 * 60 * 60 * 1000,
+  smma: 5 * 60 * 60 * 1000
+};
+
+let reviewState = {};
+for(let inst in state){
+  reviewState[inst] = { timestamps:{}, notified:false };
+}
+
+const reviewSound = new Audio(
+  "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+);
+
+if ("Notification" in window && Notification.permission!=="granted"){
+  Notification.requestPermission();
+}
+
+function checkReviews(){
+  const now = Date.now();
+  for(let inst in reviewState){
+    const card = document.getElementById(inst);
+    const body = card.querySelector(".body");
+    const sub  = card.querySelector(".subtext");
+
+    let expired=false;
+    const t = reviewState[inst].timestamps;
+
+    for(let k in t){
+      if(REVIEW_TIMERS[k] && now - t[k] > REVIEW_TIMERS[k]){
+        expired=true; break;
+      }
+    }
+
+    if(expired){
+      card.className="card yellow";
+      body.innerHTML=`<span class="warn">⚠ REVIEW</span>`;
+      sub.innerText="Time expired – needs revalidation";
+
+      if(!reviewState[inst].notified){
+        reviewState[inst].notified=true;
+        reviewSound.play();
+        if(Notification.permission==="granted"){
+          new Notification(`${inst} – Review Needed`,{
+            body:"Time expired. Recheck structure."
+          });
+        }
+      }
+    }
+  }
+}
+setInterval(checkReviews,15000);
+
+/* ===============================
+   FIREBASE
+=============================== */
+</script>
+
+<!-- FIREBASE SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAR1wt_7qeaAMXcpJ8EGj1PolZRWFxpN9o",
+  authDomain: "trade-intelligence-3bbe8.firebaseapp.com",
+  projectId: "trade-intelligence-3bbe8",
+  storageBucket: "trade-intelligence-3bbe8.firebasestorage.app",
+  messagingSenderId: "36886806770",
+  appId: "1:36886806770:web:b438cb5402a6407599506b",
+  measurementId: "G-Q62FWPFFXG"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const CLOUD_DOC = db.collection("tradeState").doc("global");
+
+function saveToCloud(){
+  CLOUD_DOC.set({
+    state:state,
+    reviewState:reviewState,
+    updated:Date.now()
+  });
+}
+
+function loadFromCloud(){
+  CLOUD_DOC.get().then(doc=>{
+    if(doc.exists){
+      const d = doc.data();
+      state = d.state;
+      reviewState = d.reviewState;
+      for(let i in state) update(i);
+    }
+  });
+}
+
+CLOUD_DOC.onSnapshot(doc=>{
+  if(doc.exists){
+    const d = doc.data();
+    state = d.state;
+    reviewState = d.reviewState;
+    for(let i in state) update(i);
+  }
+});
+
+window.addEventListener("load",()=>{
+  loadFromCloud();
+});
+</script>
+
+</body>
+</html>
